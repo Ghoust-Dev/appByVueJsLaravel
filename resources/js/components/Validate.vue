@@ -70,15 +70,8 @@ export default {
                 this.company = JSON.parse(localStorage.getItem('company'));
             }
     },
-    updated: function () {
-        this.$nextTick(function () {
-            
-        })
-    },
     computed: {
         statePersonal () {
-            //return this.personal = this.$store.commit('ajoutPersonal');
-            console.log(this.$store.getters.statePersonal);
              return this.personal = this.$store.getters.statePersonal;
         }
     },
