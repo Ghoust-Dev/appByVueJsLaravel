@@ -3,7 +3,9 @@ require('./bootstrap');
 window.Vue = require('vue');
 import VueRouter from 'vue-router';
 import store from "./store/store";
+import Vuex from "vuex";
 
+Vue.use(Vuex);
 Vue.use(VueRouter)
 
 import Progressbar from './components/Progressbar';

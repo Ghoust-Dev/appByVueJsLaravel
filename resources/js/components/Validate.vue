@@ -19,31 +19,35 @@
 
             <div class="form-group">
                 <label class="fieldlabels"><strong>First Name : </strong></label> 
-                <label class="fieldlabels">{{personal.fname}}</label> 
+                <label class="fieldlabels" >{{retreivePersonal.fname}}</label> 
             </div>
             <div class="form-group">
                 <label class="fieldlabels"><strong>Last Name : </strong></label> 
-                <label class="fieldlabels">{{personal.lname}}</label> 
+                <label class="fieldlabels">{{retreivePersonal.lname}}</label> 
+            </div>
+            <div class="form-group">
+                <label class="fieldlabels"><strong>Email : </strong></label> 
+                <label class="fieldlabels">{{retreivePersonal.email}}</label> 
             </div>
             <div class="form-group">
                 <label class="fieldlabels"><strong>Contact No : </strong></label> 
-                <label class="fieldlabels">{{personal.phone}}</label> 
+                <label class="fieldlabels" >{{retreivePersonal.phone}}</label> 
             </div>
             <div class="form-group">
                 <label class="fieldlabels"><strong>Address : </strong></label> 
-                <label class="fieldlabels">{{personal.address}}</label> 
+                <label class="fieldlabels">{{retreivePersonal.address}}</label> 
             </div>
             <div class="form-group">
                 <label class="fieldlabels"><strong>Company Name : </strong></label> 
-                <label class="fieldlabels">{{company.cName}}</label> 
+                <label class="fieldlabels">{{retreiveCompany.cName}}</label> 
             </div>
             <div class="form-group">
                 <label class="fieldlabels"><strong>Company No : </strong></label> 
-                <label class="fieldlabels">{{company.cNumero}}</label> 
+                <label class="fieldlabels">{{retreiveCompany.cNumero}}</label> 
             </div>
             <div class="form-group">
                 <label class="fieldlabels"><strong>Company Address : </strong></label> 
-                <label class="fieldlabels">{{company.cAddress}}</label> 
+                <label class="fieldlabels">{{retreiveCompany.cAddress}}</label> 
             </div>
         </div> 
         <input type="button" name="Save" class="action-button" v-bind:class="{next: isActive}" value="Submit" @click="save" /> 
@@ -61,18 +65,22 @@ export default {
             isActive: false
         }
     },
-    mounted() {
-        
-            if (localStorage.getItem('personal')) {
-                this.personal = JSON.parse(localStorage.getItem('personal'));
-            }
-            if (localStorage.getItem('company')) {
-                this.company = JSON.parse(localStorage.getItem('company'));
-            }
-    },
     computed: {
-        statePersonal () {
-             return this.personal = this.$store.getters.statePersonal;
+        retreivePersonal () {
+            return this.$store.state.personal;
+        },
+
+        retreiveCompany () {
+            return this.$store.state.company;
+        }
+    },
+    mounted() {
+        this.personal = this.$store.state.personal;
+        if (localStorage.getItem('personal')) {
+            this.personal = JSON.parse(localStorage.getItem('personal'));
+        }
+        if (localStorage.getItem('company')) {
+            this.company = JSON.parse(localStorage.getItem('company'));
         }
     },
     methods: {

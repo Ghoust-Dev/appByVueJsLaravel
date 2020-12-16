@@ -1,6 +1,5 @@
 import Vue from "vue";
 import Vuex from "vuex";
-import VuexPersistence from 'vuex-persist'
 
 Vue.use(Vuex);
  
@@ -10,22 +9,33 @@ export default new Vuex.Store({
         company: []
     },
     mutations:{
-        ajoutPersonal(state){
-            if(localStorage.getItem('personal')) {
-                    state.personal = localStorage.getItem('personal');
-            }
+
+        addPersonal(state, value){
+            state.personal = value;
         },
 
-        ajoutCompany(state){
-            if(localStorage.getItem('company')) {
-                    state.company = localStorage.getItem('company');
-            }
+        addCompany(state, value){
+            state.company = value;
         }
     },
-    getters: {
-        statePersonal: state => {
-          return state.personal;
+    actions: {
+        addPersonal(context, value){ 
+            context.commit('addPersonal', value);
+            console.log('Personal Has Been Added');
+        },
+
+        addCompany(context, value){ 
+            context.commit('addCompany', value);
+            console.log('Company Has Been Added');
         }
-      }
+    },
+    /* getters: {
+        modifiedPersonal:state => {
+            if (state.personal) {
+                //console.log("the first name "+state.personal.map(item => item.fname)); 
+            }
+        }
+        
+      } */
 });
 

@@ -44,9 +44,9 @@ export default {
             isActive: false
         }
     },
-     mounted() {
+    mounted() {
         if (localStorage.getItem('company')) {
-        this.company = JSON.parse(localStorage.getItem('company'));
+            this.company = JSON.parse(localStorage.getItem('company'));
         }
     },
     methods: {
@@ -73,11 +73,12 @@ export default {
 
             e.preventDefault();
             },
-        next(){
-            
-            this.$store.commit('ajoutCompany');
-            localStorage.setItem('company',JSON.stringify(this.company));
 
+        next(){
+
+            localStorage.setItem('company',JSON.stringify(this.company));
+            
+            //JQuery Script
             $(document).ready(function(){
 
                 var current_fs, next_fs;
@@ -123,6 +124,8 @@ export default {
 
                 });
 
+            let newCompany = this.company;
+            return this.$store.dispatch('addCompany',newCompany);
         }
     }
 }

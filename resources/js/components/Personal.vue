@@ -51,7 +51,7 @@ export default {
             isActive:false
         }
     },
-     mounted() {
+    mounted() {
         if (localStorage.getItem('personal')) {
             this.personal = JSON.parse(localStorage.getItem('personal'));
         }
@@ -89,11 +89,10 @@ export default {
             e.preventDefault();
             },
         next(){            
-
-            this.$store.commit('ajoutPersonal');
             
             localStorage.setItem('personal',JSON.stringify(this.personal));
-            
+
+            //JQuery Script
             $(document).ready(function(){
 
                 var current_fs, next_fs;
@@ -102,8 +101,6 @@ export default {
                 var steps = $("fieldset").length;
                 
                 setProgressBar(++current);
-
-                //$(".next").
                 
                 $(".next").click(function(){
                 
@@ -140,6 +137,9 @@ export default {
                 })
 
                 });
+            
+            let newPersonal = this.personal;
+            return this.$store.dispatch('addPersonal',newPersonal);
         }
     }
 }

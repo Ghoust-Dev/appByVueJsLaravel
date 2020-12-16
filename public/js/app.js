@@ -1983,8 +1983,8 @@ __webpack_require__.r(__webpack_exports__);
       e.preventDefault();
     },
     next: function next() {
-      this.$store.commit('ajoutCompany');
-      localStorage.setItem('company', JSON.stringify(this.company));
+      localStorage.setItem('company', JSON.stringify(this.company)); //JQuery Script
+
       $(document).ready(function () {
         var current_fs, next_fs;
         var opacity;
@@ -2024,6 +2024,8 @@ __webpack_require__.r(__webpack_exports__);
           return false;
         });
       });
+      var newCompany = this.company;
+      return this.$store.dispatch('addCompany', newCompany);
     }
   }
 });
@@ -2128,15 +2130,14 @@ __webpack_require__.r(__webpack_exports__);
       e.preventDefault();
     },
     next: function next() {
-      this.$store.commit('ajoutPersonal');
-      localStorage.setItem('personal', JSON.stringify(this.personal));
+      localStorage.setItem('personal', JSON.stringify(this.personal)); //JQuery Script
+
       $(document).ready(function () {
         var current_fs, next_fs;
         var opacity;
         var current = 1;
         var steps = $("fieldset").length;
-        setProgressBar(++current); //$(".next").
-
+        setProgressBar(++current);
         $(".next").click(function () {
           current_fs = $(this).parent();
           next_fs = $(this).parent().next();
@@ -2170,6 +2171,8 @@ __webpack_require__.r(__webpack_exports__);
           return false;
         });
       });
+      var newPersonal = this.personal;
+      return this.$store.dispatch('addPersonal', newPersonal);
     }
   }
 });
@@ -2238,6 +2241,10 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
@@ -2247,23 +2254,23 @@ __webpack_require__.r(__webpack_exports__);
       isActive: false
     };
   },
+  computed: {
+    retreivePersonal: function retreivePersonal() {
+      return this.$store.state.personal;
+    },
+    retreiveCompany: function retreiveCompany() {
+      return this.$store.state.company;
+    }
+  },
   mounted: function mounted() {
+    this.personal = this.$store.state.personal;
+
     if (localStorage.getItem('personal')) {
       this.personal = JSON.parse(localStorage.getItem('personal'));
     }
 
     if (localStorage.getItem('company')) {
       this.company = JSON.parse(localStorage.getItem('company'));
-    }
-  },
-  updated: function updated() {
-    this.$nextTick(function () {});
-  },
-  computed: {
-    statePersonal: function statePersonal() {
-      //return this.personal = this.$store.commit('ajoutPersonal');
-      console.log(this.$store.getters.statePersonal);
-      return this.personal = this.$store.getters.statePersonal;
     }
   },
   methods: {
@@ -6754,112 +6761,6 @@ __webpack_require__.r(__webpack_exports__);
 
 })));
 //# sourceMappingURL=bootstrap.js.map
-
-
-/***/ }),
-
-/***/ "./node_modules/flatted/esm/index.js":
-/*!*******************************************!*\
-  !*** ./node_modules/flatted/esm/index.js ***!
-  \*******************************************/
-/*! exports provided: parse, stringify */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "parse", function() { return parse; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "stringify", function() { return stringify; });
-/*! (c) 2020 Andrea Giammarchi */
-
-const {parse: $parse, stringify: $stringify} = JSON;
-const {keys} = Object;
-
-const Primitive = String;   // it could be Number
-const primitive = 'string'; // it could be 'number'
-
-const ignore = {};
-const object = 'object';
-
-const noop = (_, value) => value;
-
-const primitives = value => (
-  value instanceof Primitive ? Primitive(value) : value
-);
-
-const Primitives = (_, value) => (
-  typeof value === primitive ? new Primitive(value) : value
-);
-
-const revive = (input, parsed, output, $) => {
-  const lazy = [];
-  for (let ke = keys(output), {length} = ke, y = 0; y < length; y++) {
-    const k = ke[y];
-    const value = output[k];
-    if (value instanceof Primitive) {
-      const tmp = input[value];
-      if (typeof tmp === object && !parsed.has(tmp)) {
-        parsed.add(tmp);
-        output[k] = ignore;
-        lazy.push({k, a: [input, parsed, tmp, $]});
-      }
-      else
-        output[k] = $.call(output, k, tmp);
-    }
-    else if (output[k] !== ignore)
-      output[k] = $.call(output, k, value);
-  }
-  for (let {length} = lazy, i = 0; i < length; i++) {
-    const {k, a} = lazy[i];
-    output[k] = $.call(output, k, revive.apply(null, a));
-  }
-  return output;
-};
-
-const set = (known, input, value) => {
-  const index = Primitive(input.push(value) - 1);
-  known.set(value, index);
-  return index;
-};
-
-const parse = (text, reviver) => {
-  const input = $parse(text, Primitives).map(primitives);
-  const value = input[0];
-  const $ = reviver || noop;
-  const tmp = typeof value === object && value ?
-              revive(input, new Set, value, $) :
-              value;
-  return $.call({'': tmp}, '', tmp);
-};
-
-const stringify = (value, replacer, space) => {
-  const $ = replacer && typeof replacer === object ?
-            (k, v) => (k === '' || -1 < replacer.indexOf(k) ? v : void 0) :
-            (replacer || noop);
-  const known = new Map;
-  const input = [];
-  const output = [];
-  let i = +set(known, input, $.call({'': value}, '', value));
-  let firstRun = !i;
-  while (i < input.length) {
-    firstRun = true;
-    output[i] = $stringify(input[i++], replace, space);
-  }
-  return '[' + output.join(',') + ']';
-  function replace(key, value) {
-    if (firstRun) {
-      firstRun = !firstRun;
-      return value;
-    }
-    const after = $.call(this, key, value);
-    switch (typeof after) {
-      case object:
-        if (after === null) return after;
-      case primitive:
-        return known.get(after) || set(known, input, after);
-    }
-    return after;
-  }
-};
 
 
 /***/ }),
@@ -38542,7 +38443,7 @@ var render = function() {
         _vm._m(1),
         _vm._v(" "),
         _c("label", { staticClass: "fieldlabels" }, [
-          _vm._v(_vm._s(_vm.personal.fname))
+          _vm._v(_vm._s(_vm.retreivePersonal.fname))
         ])
       ]),
       _vm._v(" "),
@@ -38550,7 +38451,7 @@ var render = function() {
         _vm._m(2),
         _vm._v(" "),
         _c("label", { staticClass: "fieldlabels" }, [
-          _vm._v(_vm._s(_vm.personal.lname))
+          _vm._v(_vm._s(_vm.retreivePersonal.lname))
         ])
       ]),
       _vm._v(" "),
@@ -38558,7 +38459,7 @@ var render = function() {
         _vm._m(3),
         _vm._v(" "),
         _c("label", { staticClass: "fieldlabels" }, [
-          _vm._v(_vm._s(_vm.personal.phone))
+          _vm._v(_vm._s(_vm.retreivePersonal.email))
         ])
       ]),
       _vm._v(" "),
@@ -38566,7 +38467,7 @@ var render = function() {
         _vm._m(4),
         _vm._v(" "),
         _c("label", { staticClass: "fieldlabels" }, [
-          _vm._v(_vm._s(_vm.personal.address))
+          _vm._v(_vm._s(_vm.retreivePersonal.phone))
         ])
       ]),
       _vm._v(" "),
@@ -38574,7 +38475,7 @@ var render = function() {
         _vm._m(5),
         _vm._v(" "),
         _c("label", { staticClass: "fieldlabels" }, [
-          _vm._v(_vm._s(_vm.company.cName))
+          _vm._v(_vm._s(_vm.retreivePersonal.address))
         ])
       ]),
       _vm._v(" "),
@@ -38582,7 +38483,7 @@ var render = function() {
         _vm._m(6),
         _vm._v(" "),
         _c("label", { staticClass: "fieldlabels" }, [
-          _vm._v(_vm._s(_vm.company.cNumero))
+          _vm._v(_vm._s(_vm.retreiveCompany.cName))
         ])
       ]),
       _vm._v(" "),
@@ -38590,7 +38491,15 @@ var render = function() {
         _vm._m(7),
         _vm._v(" "),
         _c("label", { staticClass: "fieldlabels" }, [
-          _vm._v(_vm._s(_vm.company.cAddress))
+          _vm._v(_vm._s(_vm.retreiveCompany.cNumero))
+        ])
+      ]),
+      _vm._v(" "),
+      _c("div", { staticClass: "form-group" }, [
+        _vm._m(8),
+        _vm._v(" "),
+        _c("label", { staticClass: "fieldlabels" }, [
+          _vm._v(_vm._s(_vm.retreiveCompany.cAddress))
         ])
       ])
     ]),
@@ -38637,6 +38546,14 @@ var staticRenderFns = [
     var _c = _vm._self._c || _h
     return _c("label", { staticClass: "fieldlabels" }, [
       _c("strong", [_vm._v("Last Name : ")])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("label", { staticClass: "fieldlabels" }, [
+      _c("strong", [_vm._v("Email : ")])
     ])
   },
   function() {
@@ -53863,435 +53780,6 @@ if (false) {} else {
 
 /***/ }),
 
-/***/ "./node_modules/vuex-persist/dist/esm/index.js":
-/*!*****************************************************!*\
-  !*** ./node_modules/vuex-persist/dist/esm/index.js ***!
-  \*****************************************************/
-/*! exports provided: default, MockStorage, VuexPersistence */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MockStorage", function() { return MockStorage; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "VuexPersistence", function() { return VuexPersistence; });
-/* harmony import */ var deepmerge__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! deepmerge */ "./node_modules/vuex-persist/node_modules/deepmerge/dist/cjs.js");
-/* harmony import */ var deepmerge__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(deepmerge__WEBPACK_IMPORTED_MODULE_0__);
-
-
-/**
- * Created by championswimmer on 22/07/17.
- */
-let MockStorage;
-// @ts-ignore
-{
-    MockStorage = class {
-        get length() {
-            return Object.keys(this).length;
-        }
-        key(index) {
-            return Object.keys(this)[index];
-        }
-        setItem(key, data) {
-            this[key] = data.toString();
-        }
-        getItem(key) {
-            return this[key];
-        }
-        removeItem(key) {
-            delete this[key];
-        }
-        clear() {
-            for (let key of Object.keys(this)) {
-                delete this[key];
-            }
-        }
-    };
-}
-
-// tslint:disable: variable-name
-class SimplePromiseQueue {
-    constructor() {
-        this._queue = [];
-        this._flushing = false;
-    }
-    enqueue(promise) {
-        this._queue.push(promise);
-        if (!this._flushing) {
-            return this.flushQueue();
-        }
-        return Promise.resolve();
-    }
-    flushQueue() {
-        this._flushing = true;
-        const chain = () => {
-            const nextTask = this._queue.shift();
-            if (nextTask) {
-                return nextTask.then(chain);
-            }
-            else {
-                this._flushing = false;
-            }
-        };
-        return Promise.resolve(chain());
-    }
-}
-
-const options = {
-    replaceArrays: {
-        arrayMerge: (destinationArray, sourceArray, options) => sourceArray
-    },
-    concatArrays: {
-        arrayMerge: (target, source, options) => target.concat(...source)
-    }
-};
-function merge(into, from, mergeOption) {
-    return deepmerge__WEBPACK_IMPORTED_MODULE_0___default()(into, from, options[mergeOption]);
-}
-
-let FlattedJSON = JSON;
-/**
- * A class that implements the vuex persistence.
- * @type S type of the 'state' inside the store (default: any)
- */
-class VuexPersistence {
-    /**
-     * Create a {@link VuexPersistence} object.
-     * Use the <code>plugin</code> function of this class as a
-     * Vuex plugin.
-     * @param {PersistOptions} options
-     */
-    constructor(options) {
-        // tslint:disable-next-line:variable-name
-        this._mutex = new SimplePromiseQueue();
-        /**
-         * Creates a subscriber on the store. automatically is used
-         * when this is used a vuex plugin. Not for manual usage.
-         * @param store
-         */
-        this.subscriber = (store) => (handler) => store.subscribe(handler);
-        if (typeof options === 'undefined')
-            options = {};
-        this.key = ((options.key != null) ? options.key : 'vuex');
-        this.subscribed = false;
-        this.supportCircular = options.supportCircular || false;
-        if (this.supportCircular) {
-            FlattedJSON = __webpack_require__(/*! flatted */ "./node_modules/flatted/esm/index.js");
-        }
-        this.mergeOption = options.mergeOption || 'replaceArrays';
-        let localStorageLitmus = true;
-        try {
-            window.localStorage.getItem('');
-        }
-        catch (err) {
-            localStorageLitmus = false;
-        }
-        /**
-         * 1. First, prefer storage sent in optinos
-         * 2. Otherwise, use window.localStorage if available
-         * 3. Finally, try to use MockStorage
-         * 4. None of above? Well we gotta fail.
-         */
-        if (options.storage) {
-            this.storage = options.storage;
-        }
-        else if (localStorageLitmus) {
-            this.storage = window.localStorage;
-        }
-        else if (MockStorage) {
-            this.storage = new MockStorage();
-        }
-        else {
-            throw new Error("Neither 'window' is defined, nor 'MockStorage' is available");
-        }
-        /**
-         * How this works is -
-         *  1. If there is options.reducer function, we use that, if not;
-         *  2. We check options.modules;
-         *    1. If there is no options.modules array, we use entire state in reducer
-         *    2. Otherwise, we create a reducer that merges all those state modules that are
-         *        defined in the options.modules[] array
-         * @type {((state: S) => {}) | ((state: S) => S) | ((state: any) => {})}
-         */
-        this.reducer = ((options.reducer != null)
-            ? options.reducer
-            : ((options.modules == null)
-                ? ((state) => state)
-                : ((state) => options.modules.reduce((a, i) => merge(a, { [i]: state[i] }, this.mergeOption), { /* start empty accumulator*/}))));
-        this.filter = options.filter || ((mutation) => true);
-        this.strictMode = options.strictMode || false;
-        this.RESTORE_MUTATION = function RESTORE_MUTATION(state, savedState) {
-            const mergedState = merge(state, savedState || {}, this.mergeOption);
-            for (const propertyName of Object.keys(mergedState)) {
-                this._vm.$set(state, propertyName, mergedState[propertyName]);
-            }
-        };
-        this.asyncStorage = options.asyncStorage || false;
-        if (this.asyncStorage) {
-            /**
-             * Async {@link #VuexPersistence.restoreState} implementation
-             * @type {((key: string, storage?: Storage) =>
-             *      (Promise<S> | S)) | ((key: string, storage: AsyncStorage) => Promise<any>)}
-             */
-            this.restoreState = ((options.restoreState != null)
-                ? options.restoreState
-                : ((key, storage) => (storage).getItem(key)
-                    .then((value) => typeof value === 'string' // If string, parse, or else, just return
-                    ? (this.supportCircular
-                        ? FlattedJSON.parse(value || '{}')
-                        : JSON.parse(value || '{}'))
-                    : (value || {}))));
-            /**
-             * Async {@link #VuexPersistence.saveState} implementation
-             * @type {((key: string, state: {}, storage?: Storage) =>
-             *    (Promise<void> | void)) | ((key: string, state: {}, storage?: Storage) => Promise<void>)}
-             */
-            this.saveState = ((options.saveState != null)
-                ? options.saveState
-                : ((key, state, storage) => (storage).setItem(key, // Second argument is state _object_ if asyc storage, stringified otherwise
-                // do not stringify the state if the storage type is async
-                (this.asyncStorage
-                    ? merge({}, state || {}, this.mergeOption)
-                    : (this.supportCircular
-                        ? FlattedJSON.stringify(state)
-                        : JSON.stringify(state))))));
-            /**
-             * Async version of plugin
-             * @param {Store<S>} store
-             */
-            this.plugin = (store) => {
-                /**
-                 * For async stores, we're capturing the Promise returned
-                 * by the `restoreState()` function in a `restored` property
-                 * on the store itself. This would allow app developers to
-                 * determine when and if the store's state has indeed been
-                 * refreshed. This approach was suggested by GitHub user @hotdogee.
-                 * See https://github.com/championswimmer/vuex-persist/pull/118#issuecomment-500914963
-                 * @since 2.1.0
-                 */
-                store.restored = (this.restoreState(this.key, this.storage)).then((savedState) => {
-                    /**
-                     * If in strict mode, do only via mutation
-                     */
-                    if (this.strictMode) {
-                        store.commit('RESTORE_MUTATION', savedState);
-                    }
-                    else {
-                        store.replaceState(merge(store.state, savedState || {}, this.mergeOption));
-                    }
-                    this.subscriber(store)((mutation, state) => {
-                        if (this.filter(mutation)) {
-                            this._mutex.enqueue(this.saveState(this.key, this.reducer(state), this.storage));
-                        }
-                    });
-                    this.subscribed = true;
-                });
-            };
-        }
-        else {
-            /**
-             * Sync {@link #VuexPersistence.restoreState} implementation
-             * @type {((key: string, storage?: Storage) =>
-             *    (Promise<S> | S)) | ((key: string, storage: Storage) => (any | string | {}))}
-             */
-            this.restoreState = ((options.restoreState != null)
-                ? options.restoreState
-                : ((key, storage) => {
-                    const value = (storage).getItem(key);
-                    if (typeof value === 'string') { // If string, parse, or else, just return
-                        return (this.supportCircular
-                            ? FlattedJSON.parse(value || '{}')
-                            : JSON.parse(value || '{}'));
-                    }
-                    else {
-                        return (value || {});
-                    }
-                }));
-            /**
-             * Sync {@link #VuexPersistence.saveState} implementation
-             * @type {((key: string, state: {}, storage?: Storage) =>
-             *     (Promise<void> | void)) | ((key: string, state: {}, storage?: Storage) => Promise<void>)}
-             */
-            this.saveState = ((options.saveState != null)
-                ? options.saveState
-                : ((key, state, storage) => (storage).setItem(key, // Second argument is state _object_ if localforage, stringified otherwise
-                (this.supportCircular
-                    ? FlattedJSON.stringify(state)
-                    : JSON.stringify(state)))));
-            /**
-             * Sync version of plugin
-             * @param {Store<S>} store
-             */
-            this.plugin = (store) => {
-                const savedState = this.restoreState(this.key, this.storage);
-                if (this.strictMode) {
-                    store.commit('RESTORE_MUTATION', savedState);
-                }
-                else {
-                    store.replaceState(merge(store.state, savedState || {}, this.mergeOption));
-                }
-                this.subscriber(store)((mutation, state) => {
-                    if (this.filter(mutation)) {
-                        this.saveState(this.key, this.reducer(state), this.storage);
-                    }
-                });
-                this.subscribed = true;
-            };
-        }
-    }
-}
-
-/* harmony default export */ __webpack_exports__["default"] = (VuexPersistence);
-
-//# sourceMappingURL=index.js.map
-
-
-/***/ }),
-
-/***/ "./node_modules/vuex-persist/node_modules/deepmerge/dist/cjs.js":
-/*!**********************************************************************!*\
-  !*** ./node_modules/vuex-persist/node_modules/deepmerge/dist/cjs.js ***!
-  \**********************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var isMergeableObject = function isMergeableObject(value) {
-	return isNonNullObject(value)
-		&& !isSpecial(value)
-};
-
-function isNonNullObject(value) {
-	return !!value && typeof value === 'object'
-}
-
-function isSpecial(value) {
-	var stringValue = Object.prototype.toString.call(value);
-
-	return stringValue === '[object RegExp]'
-		|| stringValue === '[object Date]'
-		|| isReactElement(value)
-}
-
-// see https://github.com/facebook/react/blob/b5ac963fb791d1298e7f396236383bc955f916c1/src/isomorphic/classic/element/ReactElement.js#L21-L25
-var canUseSymbol = typeof Symbol === 'function' && Symbol.for;
-var REACT_ELEMENT_TYPE = canUseSymbol ? Symbol.for('react.element') : 0xeac7;
-
-function isReactElement(value) {
-	return value.$$typeof === REACT_ELEMENT_TYPE
-}
-
-function emptyTarget(val) {
-	return Array.isArray(val) ? [] : {}
-}
-
-function cloneUnlessOtherwiseSpecified(value, options) {
-	return (options.clone !== false && options.isMergeableObject(value))
-		? deepmerge(emptyTarget(value), value, options)
-		: value
-}
-
-function defaultArrayMerge(target, source, options) {
-	return target.concat(source).map(function(element) {
-		return cloneUnlessOtherwiseSpecified(element, options)
-	})
-}
-
-function getMergeFunction(key, options) {
-	if (!options.customMerge) {
-		return deepmerge
-	}
-	var customMerge = options.customMerge(key);
-	return typeof customMerge === 'function' ? customMerge : deepmerge
-}
-
-function getEnumerableOwnPropertySymbols(target) {
-	return Object.getOwnPropertySymbols
-		? Object.getOwnPropertySymbols(target).filter(function(symbol) {
-			return target.propertyIsEnumerable(symbol)
-		})
-		: []
-}
-
-function getKeys(target) {
-	return Object.keys(target).concat(getEnumerableOwnPropertySymbols(target))
-}
-
-function propertyIsOnObject(object, property) {
-	try {
-		return property in object
-	} catch(_) {
-		return false
-	}
-}
-
-// Protects from prototype poisoning and unexpected merging up the prototype chain.
-function propertyIsUnsafe(target, key) {
-	return propertyIsOnObject(target, key) // Properties are safe to merge if they don't exist in the target yet,
-		&& !(Object.hasOwnProperty.call(target, key) // unsafe if they exist up the prototype chain,
-			&& Object.propertyIsEnumerable.call(target, key)) // and also unsafe if they're nonenumerable.
-}
-
-function mergeObject(target, source, options) {
-	var destination = {};
-	if (options.isMergeableObject(target)) {
-		getKeys(target).forEach(function(key) {
-			destination[key] = cloneUnlessOtherwiseSpecified(target[key], options);
-		});
-	}
-	getKeys(source).forEach(function(key) {
-		if (propertyIsUnsafe(target, key)) {
-			return
-		}
-
-		if (propertyIsOnObject(target, key) && options.isMergeableObject(source[key])) {
-			destination[key] = getMergeFunction(key, options)(target[key], source[key], options);
-		} else {
-			destination[key] = cloneUnlessOtherwiseSpecified(source[key], options);
-		}
-	});
-	return destination
-}
-
-function deepmerge(target, source, options) {
-	options = options || {};
-	options.arrayMerge = options.arrayMerge || defaultArrayMerge;
-	options.isMergeableObject = options.isMergeableObject || isMergeableObject;
-	// cloneUnlessOtherwiseSpecified is added to `options` so that custom arrayMerge()
-	// implementations can use it. The caller may not replace it.
-	options.cloneUnlessOtherwiseSpecified = cloneUnlessOtherwiseSpecified;
-
-	var sourceIsArray = Array.isArray(source);
-	var targetIsArray = Array.isArray(target);
-	var sourceAndTargetTypesMatch = sourceIsArray === targetIsArray;
-
-	if (!sourceAndTargetTypesMatch) {
-		return cloneUnlessOtherwiseSpecified(source, options)
-	} else if (sourceIsArray) {
-		return options.arrayMerge(target, source, options)
-	} else {
-		return mergeObject(target, source, options)
-	}
-}
-
-deepmerge.all = function deepmergeAll(array, options) {
-	if (!Array.isArray(array)) {
-		throw new Error('first argument should be an array')
-	}
-
-	return array.reduce(function(prev, next) {
-		return deepmerge(prev, next, options)
-	}, {})
-};
-
-var deepmerge_1 = deepmerge;
-
-module.exports = deepmerge_1;
-
-
-/***/ }),
-
 /***/ "./node_modules/vuex/dist/vuex.esm.js":
 /*!********************************************!*\
   !*** ./node_modules/vuex/dist/vuex.esm.js ***!
@@ -55632,16 +55120,19 @@ module.exports = function(module) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var vue_router__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue-router */ "./node_modules/vue-router/dist/vue-router.esm.js");
 /* harmony import */ var _store_store__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./store/store */ "./resources/js/store/store.js");
-/* harmony import */ var _components_Progressbar__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./components/Progressbar */ "./resources/js/components/Progressbar.vue");
-/* harmony import */ var _components_Personal__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/Personal */ "./resources/js/components/Personal.vue");
-/* harmony import */ var _components_Company__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./components/Company */ "./resources/js/components/Company.vue");
-/* harmony import */ var _components_Validate__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./components/Validate */ "./resources/js/components/Validate.vue");
-/* harmony import */ var _components_Success__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./components/Success */ "./resources/js/components/Success.vue");
+/* harmony import */ var vuex__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! vuex */ "./node_modules/vuex/dist/vuex.esm.js");
+/* harmony import */ var _components_Progressbar__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/Progressbar */ "./resources/js/components/Progressbar.vue");
+/* harmony import */ var _components_Personal__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./components/Personal */ "./resources/js/components/Personal.vue");
+/* harmony import */ var _components_Company__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./components/Company */ "./resources/js/components/Company.vue");
+/* harmony import */ var _components_Validate__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./components/Validate */ "./resources/js/components/Validate.vue");
+/* harmony import */ var _components_Success__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./components/Success */ "./resources/js/components/Success.vue");
 __webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js");
 
 window.Vue = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.common.js");
 
 
+
+Vue.use(vuex__WEBPACK_IMPORTED_MODULE_2__["default"]);
 Vue.use(vue_router__WEBPACK_IMPORTED_MODULE_0__["default"]);
 
 
@@ -55650,16 +55141,16 @@ Vue.use(vue_router__WEBPACK_IMPORTED_MODULE_0__["default"]);
 
 var routes = [{
   path: '/',
-  component: _components_Personal__WEBPACK_IMPORTED_MODULE_3__["default"]
+  component: _components_Personal__WEBPACK_IMPORTED_MODULE_4__["default"]
 }, {
   path: '/company',
-  component: _components_Company__WEBPACK_IMPORTED_MODULE_4__["default"]
+  component: _components_Company__WEBPACK_IMPORTED_MODULE_5__["default"]
 }, {
   path: '/validate',
-  component: _components_Validate__WEBPACK_IMPORTED_MODULE_5__["default"]
+  component: _components_Validate__WEBPACK_IMPORTED_MODULE_6__["default"]
 }, {
   path: '/success',
-  component: _components_Success__WEBPACK_IMPORTED_MODULE_6__["default"]
+  component: _components_Success__WEBPACK_IMPORTED_MODULE_7__["default"]
 }];
 var router = new vue_router__WEBPACK_IMPORTED_MODULE_0__["default"]({
   mode: 'history',
@@ -55670,11 +55161,11 @@ var app = new Vue({
   router: router,
   store: _store_store__WEBPACK_IMPORTED_MODULE_1__["default"],
   components: {
-    Progressbar: _components_Progressbar__WEBPACK_IMPORTED_MODULE_2__["default"],
-    Personal: _components_Personal__WEBPACK_IMPORTED_MODULE_3__["default"],
-    Company: _components_Company__WEBPACK_IMPORTED_MODULE_4__["default"],
-    Validate: _components_Validate__WEBPACK_IMPORTED_MODULE_5__["default"],
-    Success: _components_Success__WEBPACK_IMPORTED_MODULE_6__["default"]
+    Progressbar: _components_Progressbar__WEBPACK_IMPORTED_MODULE_3__["default"],
+    Personal: _components_Personal__WEBPACK_IMPORTED_MODULE_4__["default"],
+    Company: _components_Company__WEBPACK_IMPORTED_MODULE_5__["default"],
+    Validate: _components_Validate__WEBPACK_IMPORTED_MODULE_6__["default"],
+    Success: _components_Success__WEBPACK_IMPORTED_MODULE_7__["default"]
   }
 });
 
@@ -56051,8 +55542,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.common.js");
 /* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(vue__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var vuex__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! vuex */ "./node_modules/vuex/dist/vuex.esm.js");
-/* harmony import */ var vuex_persist__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! vuex-persist */ "./node_modules/vuex-persist/dist/esm/index.js");
-
 
 
 vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_1__["default"]);
@@ -56062,22 +55551,32 @@ vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_1__
     company: []
   },
   mutations: {
-    ajoutPersonal: function ajoutPersonal(state) {
-      if (localStorage.getItem('personal')) {
-        state.personal = localStorage.getItem('personal');
-      }
+    addPersonal: function addPersonal(state, value) {
+      state.personal = value;
     },
-    ajoutCompany: function ajoutCompany(state) {
-      if (localStorage.getItem('company')) {
-        state.company = localStorage.getItem('company');
-      }
+    addCompany: function addCompany(state, value) {
+      state.company = value;
     }
   },
-  getters: {
-    statePersonal: function statePersonal(state) {
-      return state.personal;
+  actions: {
+    addPersonal: function addPersonal(context, value) {
+      context.commit('addPersonal', value);
+      console.log('Personal Has Been Added');
+    },
+    addCompany: function addCompany(context, value) {
+      context.commit('addCompany', value);
+      console.log('Company Has Been Added');
     }
   }
+  /* getters: {
+      modifiedPersonal:state => {
+          if (state.personal) {
+              //console.log("the first name "+state.personal.map(item => item.fname)); 
+          }
+      }
+      
+    } */
+
 }));
 
 /***/ }),
