@@ -6,7 +6,8 @@ Vue.use(Vuex);
 export default new Vuex.Store({
     state: {
         personal: [],
-        company: []
+        company: [],
+        step: 1
     },
     mutations:{
 
@@ -16,17 +17,41 @@ export default new Vuex.Store({
 
         addCompany(state, value){
             state.company = value;
+        },
+
+        updateStep(state, value){
+            state.step = value;
+        },
+
+        incrementStep(state, value){
+            state.step = ++value;
+            console.log('decrementStep is '+value);
+        },
+
+        decrementStep(state, value){
+            state.step = --value;
+            console.log('decrementStep is '+value);
         }
     },
     actions: {
         addPersonal(context, value){ 
             context.commit('addPersonal', value);
-            console.log('Personal Has Been Added');
         },
 
         addCompany(context, value){ 
             context.commit('addCompany', value);
-            console.log('Company Has Been Added');
+        },
+
+        updateStep(context, value){ 
+            context.commit('updateStep',value);
+        },
+
+        incrementStep(context, value){ 
+            context.commit('incrementStep',value);
+        },
+
+        decrementStep(context, value){ 
+            context.commit('decrementStep',value);
         }
     },
     /* getters: {

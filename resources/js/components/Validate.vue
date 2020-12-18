@@ -1,6 +1,6 @@
 <template>
-    <fieldset>
-        <div class="form-card">
+    <fieldset id="Validate">
+        <div class="form-card" >
             <div class="row">
                 <div class="col-7">
                     <h2 class="fs-title">All your Information:</h2>
@@ -10,7 +10,7 @@
                 </div>
             </div> 
 
-            <ul>
+            <ul class="" v-bind:class="{'alert alert-danger': messageError}">
                 <li v-for="item in messages" :key="item">
                     {{ item }}
                 </li>
@@ -51,7 +51,7 @@
             </div>
         </div> 
         <input type="button" name="Save" class="action-button" v-bind:class="{next: isActive}" value="Submit" @click="save" /> 
-        <input type="button" name="previous" class="previous action-button-previous" value="Previous" />
+        <input type="button" name="previous" class="action-button-previous" value="Previous" v-on:click="previousForm"/>
     </fieldset>
 </template>
 
@@ -62,89 +62,154 @@ export default {
             personal: [],
             company: [],
             messages: [],
-            isActive: false
+            isActive: false,
+            messageError: false
         }
     },
     computed: {
         retreivePersonal () {
-            return this.$store.state.personal;
+            this.personal = this.$store.state.personal;
+            return this.personal;
         },
 
         retreiveCompany () {
+            this.company = this.$store.state.company;
             return this.$store.state.company;
         }
     },
     mounted() {
-        this.personal = this.$store.state.personal;
-        if (localStorage.getItem('personal')) {
-            this.personal = JSON.parse(localStorage.getItem('personal'));
+        if (JSON.parse(localStorage.getItem('step')) === 3) {
+            this.loadComponent();
+            this.$store.state.personal = JSON.parse(localStorage.getItem('personal'));
+            this.$store.state.company = JSON.parse(localStorage.getItem('company'));
+            
+           return this.$store.dispatch('updateStep',JSON.parse(localStorage.getItem('step')));
         }
-        if (localStorage.getItem('company')) {
-            this.company = JSON.parse(localStorage.getItem('company'));
-        }
+        
     },
     methods: {
+
         save(){
-            axios.post('api/createContact',this.personal).then(response => {
-                if(response.data.error){
+            
+            axios.post('api/createContact',this.retreivePersonal).then(response => {
+                if(!response.data.statu){
+                    console.log(response.data);
                     Object.values(response.data.error).forEach(val => {
-                            this.messages = val;
+                        this.messageError = true;
+                        this.messages = val;
                     });
                 }
 
-                if(response.data){
+                if(response.data.statu){
                     this.setActive = true;
-                    this.next();
-                    console.log(response.data);
+                    this.nextForm();
                 }
             }
             );
         },
-
-        next(){   
-
-            $(document).ready(function(){
-
-                var current_fs, next_fs;
-                var opacity;
-                var current = 3;
-                var steps = $("fieldset").length;
-                
-                setProgressBar(++current);
-
-                
-                current_fs = $(this).parent();
-                next_fs = $(this).parent().next();
-                
-                $("#progressbar li").eq($("fieldset").index(next_fs)).addClass("active");
-                
-                next_fs.show();
-                current_fs.animate({opacity: 0}, {
+        loadComponent(){            
+            //Progress Bar Style
+            var opacity;
+            var current = JSON.parse(localStorage.getItem('step'));;
+            var steps = $("fieldset").length;
+            
+            $("#Validate").show();
+            
+            $("#step2 li").addClass("active");
+            $("#step3 li").addClass("active");
+            $("#step4 li").removeClass("active");
+            
+            $("#Personal, #Company").animate({opacity: 0}, {
                 step: function(now) {
-                opacity = 1 - now;
-                
-                current_fs.css({
-                'display': 'none',
-                'position': 'relative'
-                });
-                next_fs.css({'opacity': opacity});
+                    opacity = 1 - now;
+                    $("#Personal,  #Company").css({
+                        'display': 'none',
+                        'position': 'relative'
+                    });
+                    $("#Validate").css({'opacity': opacity});
                 },
                 duration: 500
-                });
-                setProgressBar(++current);
-                
-                function setProgressBar(curStep){
+            });
+            
+            setProgressBar(current);
+            function setProgressBar(curStep){
+                var percent = parseFloat(100 / steps) * curStep;
+                console.log('steps is '+steps+' curStep is '+curStep);
+                percent = percent.toFixed();
+                $(".progress-bar")
+                .css("width",percent+"%")
+            }
+        },
+        nextForm(){            
+            //Progress Bar Style
+            var opacity;
+            var current =  this.$store.state.step;
+            var steps = $("fieldset").length;
+            
+            $("#Success").show();
+            
+            $("#step2 li").addClass("active");
+            $("#step3 li").addClass("active");
+            $("#step4 li").addClass("active");
+            
+            $("#Company, #Personal, #Validate").animate({opacity: 0}, {
+                step: function(now) {
+                    opacity = 1 - now;
+                    $("#Company, #Personal, #Validate").css({
+                        'display': 'none',
+                        'position': 'relative'
+                    });
+                    $("#Success").css({'opacity': opacity});
+                },
+                duration: 500
+            });
+            
+            setProgressBar(++current);
+            function setProgressBar(curStep){
                 var percent = parseFloat(100 / steps) * curStep;
                 percent = percent.toFixed();
                 $(".progress-bar")
                 .css("width",percent+"%")
-                }
-                
-                $(".submit").click(function(){
-                return false;
-                })
+            }
 
-                });
+            localStorage.setItem('step',current);
+            return this.$store.dispatch('incrementStep',this.$store.state.step);
+        },
+        previousForm(){            
+            //Progress Bar Style
+            var opacity;
+            var current = this.$store.state.step;
+            var steps = $("fieldset").length;
+            
+            $("#Company").show();
+            
+            $("#step2 li").addClass("active");
+            $("#step3 li").removeClass("active");
+            $("#step4 li").removeClass("active");
+            
+            $("#Validate").animate({opacity: 0}, {
+                step: function(now) {
+                    opacity = 1 - now;
+                    $("#Validate").css({
+                        'display': 'none',
+                        'position': 'relative'
+                    });
+                    $("#Company").css({'opacity': opacity});
+                },
+                duration: 500
+            });
+            
+            setProgressBar(--current);
+            function setProgressBar(curStep){
+                var percent = parseFloat(100 / steps) * curStep;
+                percent = percent.toFixed();
+                $(".progress-bar")
+                .css("width",percent+"%")
+            }
+            
+            localStorage.setItem('step',current);
+            return this.$store.dispatch('decrementStep',this.$store.state.step);
+                
         }
 
         

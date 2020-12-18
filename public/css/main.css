@@ -138,7 +138,7 @@ p {
 #progressbar {
     margin-bottom: 30px;
     overflow: hidden;
-    color: lightgrey
+    color: lightgrey;
 }
 
 #progressbar .active {
@@ -151,7 +151,8 @@ p {
     width: 25%;
     float: left;
     position: relative;
-    font-weight: 400
+    font-weight: 400;
+    cursor: pointer;
 }
 
 #progressbar #company:before {

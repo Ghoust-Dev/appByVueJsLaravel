@@ -1940,11 +1940,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      company: {
-        cName: '',
-        cNumero: '',
-        cAddress: ''
-      },
+      company: {},
       errors: {
         cName: null,
         cNumero: null,
@@ -1954,14 +1950,18 @@ __webpack_require__.r(__webpack_exports__);
     };
   },
   mounted: function mounted() {
-    if (localStorage.getItem('company')) {
-      this.company = JSON.parse(localStorage.getItem('company'));
+    this.company = JSON.parse(localStorage.getItem('company'));
+
+    if (JSON.parse(localStorage.getItem('step')) === 2) {
+      this.loadComponent();
+      this.$store.state.company = JSON.parse(localStorage.getItem('company'));
+      return this.$store.dispatch('updateStep', JSON.parse(localStorage.getItem('step')));
     }
   },
   methods: {
     checkForm: function checkForm(e) {
       if (this.company.cName && this.company.cNumero && this.company.cAddress) {
-        this.isActive = true;
+        console.log('this.company.cName ' + this.company.cName);
         this.next();
         return true;
       }
@@ -1983,49 +1983,117 @@ __webpack_require__.r(__webpack_exports__);
       e.preventDefault();
     },
     next: function next() {
-      localStorage.setItem('company', JSON.stringify(this.company)); //JQuery Script
-
-      $(document).ready(function () {
-        var current_fs, next_fs;
-        var opacity;
-        var current = 2;
-        var steps = $("fieldset").length;
-        setProgressBar(++current);
-        $(".next").click(function () {
-          current_fs = $(this).parent();
-          next_fs = $(this).parent().next();
-          $("#progressbar li").eq($("fieldset").index(next_fs)).addClass("active");
-          next_fs.show();
-          current_fs.animate({
-            opacity: 0
-          }, {
-            step: function step(now) {
-              opacity = 1 - now;
-              current_fs.css({
-                'display': 'none',
-                'position': 'relative'
-              });
-              next_fs.css({
-                'opacity': opacity
-              });
-            },
-            duration: 500
-          });
-          setProgressBar(++current);
-        });
-
-        function setProgressBar(curStep) {
-          var percent = parseFloat(100 / steps) * curStep;
-          percent = percent.toFixed();
-          $(".progress-bar").css("width", percent + "%");
-        }
-
-        $(".submit").click(function () {
-          return false;
-        });
-      });
+      localStorage.setItem('company', JSON.stringify(this.company));
+      this.nextForm();
+      return this.loadState();
+    },
+    loadState: function loadState() {
       var newCompany = this.company;
-      return this.$store.dispatch('addCompany', newCompany);
+      this.$store.dispatch('addCompany', newCompany);
+    },
+    loadComponent: function loadComponent() {
+      //Progress Bar Style
+      var opacity;
+      var current = JSON.parse(localStorage.getItem('step'));
+      ;
+      var steps = $("fieldset").length;
+      $("#Company").show();
+      $("#step2 li").addClass("active");
+      $("#step3 li").removeClass("active");
+      $("#step4 li").removeClass("active");
+      $("#Personal").animate({
+        opacity: 0
+      }, {
+        step: function step(now) {
+          opacity = 1 - now;
+          $("#Personal").css({
+            'display': 'none',
+            'position': 'relative'
+          });
+          $("#Company").css({
+            'opacity': opacity
+          });
+        },
+        duration: 500
+      });
+      setProgressBar(current);
+
+      function setProgressBar(curStep) {
+        var percent = parseFloat(100 / steps) * curStep;
+        percent = percent.toFixed();
+        $("#progress-bar").css("width", percent + "%");
+        console.log('steps is ' + steps + ' curStep is ' + curStep + ' percent is ' + percent);
+      }
+    },
+    nextForm: function nextForm() {
+      //Progress Bar Style
+      var opacity;
+      var current = this.$store.state.step;
+      var steps = $("fieldset").length;
+      $("#Validate").show();
+      $("#step2 li").addClass("active");
+      $("#step3 li").addClass("active");
+      $("#step4 li").removeClass("active");
+      $("#Company").animate({
+        opacity: 0
+      }, {
+        step: function step(now) {
+          opacity = 1 - now;
+          $("#Company").css({
+            'display': 'none',
+            'position': 'relative'
+          });
+          $("#Validate").css({
+            'opacity': opacity
+          });
+        },
+        duration: 500
+      });
+      setProgressBar(++current);
+
+      function setProgressBar(curStep) {
+        var percent = parseFloat(100 / steps) * curStep;
+        percent = percent.toFixed();
+        $(".progress-bar").css("width", percent + "%");
+      }
+
+      localStorage.setItem('step', current);
+      return this.$store.dispatch('incrementStep', this.$store.state.step);
+    },
+    previousForm: function previousForm() {
+      //Progress Bar Style
+      var opacity;
+      var current = this.$store.state.step;
+      var steps = $("fieldset").length;
+      $("#Personal").show();
+      $("#step2 li").removeClass("active");
+      $("#step3 li").removeClass("active");
+      $("#step4 li").removeClass("active");
+      $("#Company").animate({
+        opacity: 0
+      }, {
+        step: function step(now) {
+          opacity = 1 - now;
+          $("#Company").css({
+            'display': 'none',
+            'position': 'relative'
+          });
+          $("#Personal").css({
+            'opacity': opacity
+          });
+        },
+        duration: 500
+      });
+      setProgressBar(--current);
+
+      function setProgressBar(curStep) {
+        var percent = parseFloat(100 / steps) * curStep;
+        percent = percent.toFixed();
+        $(".progress-bar").css("width", percent + "%");
+      }
+
+      localStorage.setItem('step', current);
+      return this.$store.dispatch('decrementStep', this.$store.state.step);
     }
   }
 });
@@ -2076,13 +2144,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      personal: {
-        fname: '',
-        lname: '',
-        email: '',
-        phone: '',
-        address: ''
-      },
+      personal: {},
       errors: {
         fname: null,
         lname: null,
@@ -2094,8 +2156,12 @@ __webpack_require__.r(__webpack_exports__);
     };
   },
   mounted: function mounted() {
-    if (localStorage.getItem('personal')) {
-      this.personal = JSON.parse(localStorage.getItem('personal'));
+    this.personal = JSON.parse(localStorage.getItem('personal'));
+
+    if (JSON.parse(localStorage.getItem('step')) === 1) {
+      this.loadComponent();
+      this.$store.state.personal = JSON.parse(localStorage.getItem('personal'));
+      return this.$store.dispatch('updateStep', JSON.parse(localStorage.getItem('step')));
     }
   },
   methods: {
@@ -2130,49 +2196,281 @@ __webpack_require__.r(__webpack_exports__);
       e.preventDefault();
     },
     next: function next() {
-      localStorage.setItem('personal', JSON.stringify(this.personal)); //JQuery Script
-
-      $(document).ready(function () {
-        var current_fs, next_fs;
-        var opacity;
-        var current = 1;
-        var steps = $("fieldset").length;
-        setProgressBar(++current);
-        $(".next").click(function () {
-          current_fs = $(this).parent();
-          next_fs = $(this).parent().next();
-          $("#progressbar li").eq($("fieldset").index(next_fs)).addClass("active");
-          next_fs.show();
-          current_fs.animate({
-            opacity: 0
-          }, {
-            step: function step(now) {
-              opacity = 1 - now;
-              current_fs.css({
-                'display': 'none',
-                'position': 'relative'
-              });
-              next_fs.css({
-                'opacity': opacity
-              });
-            },
-            duration: 500
-          });
-          setProgressBar(++current);
-        });
-
-        function setProgressBar(curStep) {
-          var percent = parseFloat(100 / steps) * curStep;
-          percent = percent.toFixed();
-          $(".progress-bar").css("width", percent + "%");
-        }
-
-        $(".submit").click(function () {
-          return false;
-        });
-      });
+      localStorage.setItem('personal', JSON.stringify(this.personal));
+      this.nextForm();
+      return this.loadState();
+    },
+    loadState: function loadState() {
       var newPersonal = this.personal;
       return this.$store.dispatch('addPersonal', newPersonal);
+    },
+    loadComponent: function loadComponent() {
+      //Progress Bar Style
+      var current = JSON.parse(localStorage.getItem('step'));
+      var steps = $("fieldset").length;
+      $("#step2 li").removeClass("active");
+      $("#step3 li").removeClass("active");
+      $("#step4 li").removeClass("active");
+      setProgressBar(current);
+
+      function setProgressBar(curStep) {
+        var percent = parseFloat(100 / steps) * curStep;
+        percent = percent.toFixed();
+        $(".progress-bar").css("width", percent + "%");
+      }
+    },
+    nextForm: function nextForm() {
+      //Progress Bar Style
+      var opacity;
+      var current = this.$store.state.step;
+      var steps = $("fieldset").length;
+      $("#Company").show();
+      $("#step2 li").addClass("active");
+      $("#step3 li").removeClass("active");
+      $("#step4 li").removeClass("active");
+      $("#Personal").animate({
+        opacity: 0
+      }, {
+        step: function step(now) {
+          opacity = 1 - now;
+          $("#Personal").css({
+            'display': 'none',
+            'position': 'relative'
+          });
+          $("#Company").css({
+            'opacity': opacity
+          });
+        },
+        duration: 500
+      });
+      setProgressBar(++current);
+
+      function setProgressBar(curStep) {
+        var percent = parseFloat(100 / steps) * curStep;
+        percent = percent.toFixed();
+        $(".progress-bar").css("width", percent + "%");
+      }
+
+      localStorage.setItem('step', current);
+      return this.$store.dispatch('incrementStep', this.$store.state.step);
+    }
+  }
+});
+
+/***/ }),
+
+/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Progressbar.vue?vue&type=script&lang=js&":
+/*!**********************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/Progressbar.vue?vue&type=script&lang=js& ***!
+  \**********************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+/* harmony default export */ __webpack_exports__["default"] = ({
+  methods: {
+    loadPersonal: function loadPersonal() {
+      var opacity;
+      var step = 1;
+      var steps = $("fieldset").length;
+      $("#Personal").show();
+      $("#Company, #Validate, #Success").animate({
+        opacity: 0
+      }, {
+        step: function step(now) {
+          opacity = 1 - now;
+          $("#Company,  #Validate, #Success").css({
+            'display': 'none',
+            'position': 'relative'
+          });
+          $("#Personal").css({
+            'opacity': opacity
+          });
+        },
+        duration: 500
+      });
+      setProgressBar(step);
+
+      function setProgressBar(curStep) {
+        var percent = parseFloat(100 / steps) * curStep;
+        percent = percent.toFixed();
+        $(".progress-bar").css("width", percent + "%");
+      }
+    },
+    loadCompany: function loadCompany() {
+      var opacity;
+      var step = 2;
+      var steps = $("fieldset").length;
+      $("#step2 li").addClass("active");
+      $("#step3 li").removeClass("active");
+      $("#step4 li").removeClass("active");
+      $("#Company").show();
+      $("#Personal, #Validate, #Success").animate({
+        opacity: 0
+      }, {
+        step: function step(now) {
+          opacity = 1 - now;
+          $("#Personal,  #Validate, #Success").css({
+            'display': 'none',
+            'position': 'relative'
+          });
+          $("#Company").css({
+            'opacity': opacity
+          });
+        },
+        duration: 500
+      });
+      setProgressBar(step);
+
+      function setProgressBar(curStep) {
+        var percent = parseFloat(100 / steps) * curStep;
+        percent = percent.toFixed();
+        $(".progress-bar").css("width", percent + "%");
+      }
+    },
+    loadValidate: function loadValidate() {
+      var opacity;
+      var step = 3;
+      var steps = $("fieldset").length;
+      $("#step2 li").addClass("active");
+      $("#step3 li").addClass("active");
+      $("#step4 li").removeClass("active");
+      $("#Validate").show();
+      $("#Personal, #Company, #Success").animate({
+        opacity: 0
+      }, {
+        step: function step(now) {
+          opacity = 1 - now;
+          $("#Personal,  #Company , #Success").css({
+            'display': 'none',
+            'position': 'relative'
+          });
+          $("#Validate").css({
+            'opacity': opacity
+          });
+        },
+        duration: 500
+      });
+      setProgressBar(step);
+
+      function setProgressBar(curStep) {
+        var percent = parseFloat(100 / steps) * curStep;
+        percent = percent.toFixed();
+        $(".progress-bar").css("width", percent + "%");
+      }
+    }
+  }
+});
+
+/***/ }),
+
+/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Success.vue?vue&type=script&lang=js&":
+/*!******************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/Success.vue?vue&type=script&lang=js& ***!
+  \******************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+/* harmony default export */ __webpack_exports__["default"] = ({
+  data: function data() {
+    return {
+      step: null
+    };
+  },
+  mounted: function mounted() {
+    if (JSON.parse(localStorage.getItem('step')) === 4) {
+      this.loadComponent();
+      return this.$store.dispatch('updateStep', JSON.parse(localStorage.getItem('step')));
+    }
+  },
+  methods: {
+    /* loadState(){
+        let newStep = ++this.step;
+        this.$store.dispatch('addStep',newStep);
+    }, */
+    loadComponent: function loadComponent() {
+      //Progress Bar Style
+      var opacity;
+      var current = JSON.parse(localStorage.getItem('step'));
+      ;
+      var steps = $("fieldset").length;
+      $("#Success").show();
+      $("#step2 li").addClass("active");
+      $("#step3 li").addClass("active");
+      $("#step4 li").addClass("active");
+      $("#Personal, #Company, #Validate").animate({
+        opacity: 0
+      }, {
+        step: function step(now) {
+          opacity = 1 - now;
+          $("#Personal,  #Company, #Validate").css({
+            'display': 'none',
+            'position': 'relative'
+          });
+          $("#Success").css({
+            'opacity': opacity
+          });
+        },
+        duration: 500
+      });
+      setProgressBar(current);
+
+      function setProgressBar(curStep) {
+        var percent = parseFloat(100 / steps) * curStep;
+        console.log('steps is ' + steps + ' curStep is ' + curStep);
+        percent = percent.toFixed();
+        $(".progress-bar").css("width", percent + "%");
+      }
     }
   }
 });
@@ -2251,86 +2549,151 @@ __webpack_require__.r(__webpack_exports__);
       personal: [],
       company: [],
       messages: [],
-      isActive: false
+      isActive: false,
+      messageError: false
     };
   },
   computed: {
     retreivePersonal: function retreivePersonal() {
-      return this.$store.state.personal;
+      this.personal = this.$store.state.personal;
+      return this.personal;
     },
     retreiveCompany: function retreiveCompany() {
+      this.company = this.$store.state.company;
       return this.$store.state.company;
     }
   },
   mounted: function mounted() {
-    this.personal = this.$store.state.personal;
-
-    if (localStorage.getItem('personal')) {
-      this.personal = JSON.parse(localStorage.getItem('personal'));
-    }
-
-    if (localStorage.getItem('company')) {
-      this.company = JSON.parse(localStorage.getItem('company'));
+    if (JSON.parse(localStorage.getItem('step')) === 3) {
+      this.loadComponent();
+      this.$store.state.personal = JSON.parse(localStorage.getItem('personal'));
+      this.$store.state.company = JSON.parse(localStorage.getItem('company'));
+      return this.$store.dispatch('updateStep', JSON.parse(localStorage.getItem('step')));
     }
   },
   methods: {
     save: function save() {
       var _this = this;
 
-      axios.post('api/createContact', this.personal).then(function (response) {
-        if (response.data.error) {
+      axios.post('api/createContact', this.retreivePersonal).then(function (response) {
+        if (!response.data.statu) {
+          console.log(response.data);
           Object.values(response.data.error).forEach(function (val) {
+            _this.messageError = true;
             _this.messages = val;
           });
         }
 
-        if (response.data) {
+        if (response.data.statu) {
           _this.setActive = true;
 
-          _this.next();
-
-          console.log(response.data);
+          _this.nextForm();
         }
       });
     },
-    next: function next() {
-      $(document).ready(function () {
-        var current_fs, next_fs;
-        var opacity;
-        var current = 3;
-        var steps = $("fieldset").length;
-        setProgressBar(++current);
-        current_fs = $(this).parent();
-        next_fs = $(this).parent().next();
-        $("#progressbar li").eq($("fieldset").index(next_fs)).addClass("active");
-        next_fs.show();
-        current_fs.animate({
-          opacity: 0
-        }, {
-          step: function step(now) {
-            opacity = 1 - now;
-            current_fs.css({
-              'display': 'none',
-              'position': 'relative'
-            });
-            next_fs.css({
-              'opacity': opacity
-            });
-          },
-          duration: 500
-        });
-        setProgressBar(++current);
-
-        function setProgressBar(curStep) {
-          var percent = parseFloat(100 / steps) * curStep;
-          percent = percent.toFixed();
-          $(".progress-bar").css("width", percent + "%");
-        }
-
-        $(".submit").click(function () {
-          return false;
-        });
+    loadComponent: function loadComponent() {
+      //Progress Bar Style
+      var opacity;
+      var current = JSON.parse(localStorage.getItem('step'));
+      ;
+      var steps = $("fieldset").length;
+      $("#Validate").show();
+      $("#step2 li").addClass("active");
+      $("#step3 li").addClass("active");
+      $("#step4 li").removeClass("active");
+      $("#Personal, #Company").animate({
+        opacity: 0
+      }, {
+        step: function step(now) {
+          opacity = 1 - now;
+          $("#Personal,  #Company").css({
+            'display': 'none',
+            'position': 'relative'
+          });
+          $("#Validate").css({
+            'opacity': opacity
+          });
+        },
+        duration: 500
       });
+      setProgressBar(current);
+
+      function setProgressBar(curStep) {
+        var percent = parseFloat(100 / steps) * curStep;
+        console.log('steps is ' + steps + ' curStep is ' + curStep);
+        percent = percent.toFixed();
+        $(".progress-bar").css("width", percent + "%");
+      }
+    },
+    nextForm: function nextForm() {
+      //Progress Bar Style
+      var opacity;
+      var current = this.$store.state.step;
+      var steps = $("fieldset").length;
+      $("#Success").show();
+      $("#step2 li").addClass("active");
+      $("#step3 li").addClass("active");
+      $("#step4 li").addClass("active");
+      $("#Company, #Personal, #Validate").animate({
+        opacity: 0
+      }, {
+        step: function step(now) {
+          opacity = 1 - now;
+          $("#Company, #Personal, #Validate").css({
+            'display': 'none',
+            'position': 'relative'
+          });
+          $("#Success").css({
+            'opacity': opacity
+          });
+        },
+        duration: 500
+      });
+      setProgressBar(++current);
+
+      function setProgressBar(curStep) {
+        var percent = parseFloat(100 / steps) * curStep;
+        percent = percent.toFixed();
+        $(".progress-bar").css("width", percent + "%");
+      }
+
+      localStorage.setItem('step', current);
+      return this.$store.dispatch('incrementStep', this.$store.state.step);
+    },
+    previousForm: function previousForm() {
+      //Progress Bar Style
+      var opacity;
+      var current = this.$store.state.step;
+      var steps = $("fieldset").length;
+      $("#Company").show();
+      $("#step2 li").addClass("active");
+      $("#step3 li").removeClass("active");
+      $("#step4 li").removeClass("active");
+      $("#Validate").animate({
+        opacity: 0
+      }, {
+        step: function step(now) {
+          opacity = 1 - now;
+          $("#Validate").css({
+            'display': 'none',
+            'position': 'relative'
+          });
+          $("#Company").css({
+            'opacity': opacity
+          });
+        },
+        duration: 500
+      });
+      setProgressBar(--current);
+
+      function setProgressBar(curStep) {
+        var percent = parseFloat(100 / steps) * curStep;
+        percent = percent.toFixed();
+        $(".progress-bar").css("width", percent + "%");
+      }
+
+      localStorage.setItem('step', current);
+      return this.$store.dispatch('decrementStep', this.$store.state.step);
     }
   }
 });
@@ -37927,7 +38290,7 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("fieldset", [
+  return _c("fieldset", { attrs: { id: "Company" } }, [
     _c("div", { staticClass: "form-card" }, [
       _vm._m(0),
       _vm._v(" "),
@@ -38034,14 +38397,14 @@ var render = function() {
     _vm._v(" "),
     _c("input", {
       staticClass: "action-button",
-      class: { next: _vm.isActive },
       attrs: { type: "button", name: "next", value: "Next" },
       on: { click: _vm.checkForm }
     }),
     _vm._v(" "),
     _c("input", {
-      staticClass: "previous action-button-previous",
-      attrs: { type: "button", name: "previous", value: "Previous" }
+      staticClass: "action-button-previous",
+      attrs: { type: "button", name: "previous", value: "Previous" },
+      on: { click: _vm.previousForm }
     })
   ])
 }
@@ -38082,7 +38445,7 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("fieldset", [
+  return _c("fieldset", { attrs: { id: "Personal" } }, [
     _c("div", { staticClass: "form-card" }, [
       _vm._m(0),
       _vm._v(" "),
@@ -38281,41 +38644,48 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", [
-    _c(
-      "ul",
-      { attrs: { id: "progressbar" } },
-      [
-        _c("router-link", { attrs: { to: "/", id: "1" } }, [
-          _c("li", { staticClass: "active", attrs: { id: "personal" } }, [
-            _c("strong", [_vm._v("Personal")])
-          ])
-        ]),
-        _vm._v(" "),
-        _c("router-link", { attrs: { to: "/company", id: "2" } }, [
-          _c("li", { attrs: { id: "company" } }, [
-            _c("strong", [_vm._v("Company")])
-          ])
-        ]),
-        _vm._v(" "),
-        _c("router-link", { attrs: { to: "/validate", id: "3" } }, [
-          _c("li", { attrs: { id: "validate" } }, [
-            _c("strong", [_vm._v("Validate")])
-          ])
-        ]),
-        _vm._v(" "),
-        _c("router-link", { attrs: { to: "/success", id: "4" } }, [
-          _c("li", { attrs: { id: "confirm" } }, [
-            _c("strong", [_vm._v("Finish")])
-          ])
+    _c("ul", { attrs: { id: "progressbar" } }, [
+      _c("div", { attrs: { id: "step1" } }, [
+        _c(
+          "li",
+          {
+            staticClass: "active",
+            attrs: { id: "personal" },
+            on: { click: _vm.loadPersonal }
+          },
+          [_c("strong", [_vm._v("Personal")])]
+        )
+      ]),
+      _vm._v(" "),
+      _c("div", { attrs: { id: "step2", disabled: "" } }, [
+        _c("li", { attrs: { id: "company" }, on: { click: _vm.loadCompany } }, [
+          _c("strong", [_vm._v("Company")])
         ])
-      ],
-      1
-    ),
+      ]),
+      _vm._v(" "),
+      _c("div", { attrs: { id: "step3" } }, [
+        _c(
+          "li",
+          { attrs: { id: "validate" }, on: { click: _vm.loadValidate } },
+          [_c("strong", [_vm._v("Validate")])]
+        )
+      ]),
+      _vm._v(" "),
+      _vm._m(0)
+    ]),
     _vm._v(" "),
-    _vm._m(0)
+    _vm._m(1)
   ])
 }
 var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { attrs: { id: "step4" } }, [
+      _c("li", { attrs: { id: "confirm" } }, [_c("strong", [_vm._v("Finish")])])
+    ])
+  },
   function() {
     var _vm = this
     var _h = _vm.$createElement
@@ -38324,6 +38694,7 @@ var staticRenderFns = [
       _c("div", {
         staticClass: "progress-bar progress-bar-striped progress-bar-animated",
         attrs: {
+          id: "progress-bar",
           role: "progressbar",
           "aria-valuemin": "0",
           "aria-valuemax": "100"
@@ -38360,7 +38731,7 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("fieldset", [
+    return _c("fieldset", { attrs: { id: "Success" } }, [
       _c("div", { staticClass: "form-card" }, [
         _c("div", { staticClass: "row" }, [
           _c("div", { staticClass: "col-7" }, [
@@ -38385,7 +38756,7 @@ var staticRenderFns = [
           _c("div", { staticClass: "col-3" }, [
             _c("img", {
               staticClass: "fit-image",
-              attrs: { src: "https://i.imgur.com/GwStPmg.png" }
+              attrs: { src: "images/GwStPmg.png" }
             })
           ])
         ]),
@@ -38425,12 +38796,13 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("fieldset", [
+  return _c("fieldset", { attrs: { id: "Validate" } }, [
     _c("div", { staticClass: "form-card" }, [
       _vm._m(0),
       _vm._v(" "),
       _c(
         "ul",
+        { class: { "alert alert-danger": _vm.messageError } },
         _vm._l(_vm.messages, function(item) {
           return _c("li", { key: item }, [
             _vm._v("\n                " + _vm._s(item) + "\n            ")
@@ -38512,8 +38884,9 @@ var render = function() {
     }),
     _vm._v(" "),
     _c("input", {
-      staticClass: "previous action-button-previous",
-      attrs: { type: "button", name: "previous", value: "Previous" }
+      staticClass: "action-button-previous",
+      attrs: { type: "button", name: "previous", value: "Previous" },
+      on: { click: _vm.previousForm }
     })
   ])
 }
@@ -55289,15 +55662,14 @@ __webpack_require__.r(__webpack_exports__);
 /*!**********************************************!*\
   !*** ./resources/js/components/Personal.vue ***!
   \**********************************************/
-/*! no static exports found */
+/*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _Personal_vue_vue_type_template_id_0ac41bab___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Personal.vue?vue&type=template&id=0ac41bab& */ "./resources/js/components/Personal.vue?vue&type=template&id=0ac41bab&");
 /* harmony import */ var _Personal_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Personal.vue?vue&type=script&lang=js& */ "./resources/js/components/Personal.vue?vue&type=script&lang=js&");
-/* harmony reexport (unknown) */ for(var __WEBPACK_IMPORT_KEY__ in _Personal_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__) if(["default"].indexOf(__WEBPACK_IMPORT_KEY__) < 0) (function(key) { __webpack_require__.d(__webpack_exports__, key, function() { return _Personal_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__[key]; }) }(__WEBPACK_IMPORT_KEY__));
-/* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
 
 
 
@@ -55327,7 +55699,7 @@ component.options.__file = "resources/js/components/Personal.vue"
 /*!***********************************************************************!*\
   !*** ./resources/js/components/Personal.vue?vue&type=script&lang=js& ***!
   \***********************************************************************/
-/*! no static exports found */
+/*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -55365,15 +55737,17 @@ __webpack_require__.r(__webpack_exports__);
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _Progressbar_vue_vue_type_template_id_327416ab___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Progressbar.vue?vue&type=template&id=327416ab& */ "./resources/js/components/Progressbar.vue?vue&type=template&id=327416ab&");
-/* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+/* harmony import */ var _Progressbar_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Progressbar.vue?vue&type=script&lang=js& */ "./resources/js/components/Progressbar.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
 
-var script = {}
+
+
 
 
 /* normalize component */
 
-var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_1__["default"])(
-  script,
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
+  _Progressbar_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
   _Progressbar_vue_vue_type_template_id_327416ab___WEBPACK_IMPORTED_MODULE_0__["render"],
   _Progressbar_vue_vue_type_template_id_327416ab___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
   false,
@@ -55387,6 +55761,20 @@ var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_
 if (false) { var api; }
 component.options.__file = "resources/js/components/Progressbar.vue"
 /* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/components/Progressbar.vue?vue&type=script&lang=js&":
+/*!**************************************************************************!*\
+  !*** ./resources/js/components/Progressbar.vue?vue&type=script&lang=js& ***!
+  \**************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_Progressbar_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/babel-loader/lib??ref--4-0!../../../node_modules/vue-loader/lib??vue-loader-options!./Progressbar.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Progressbar.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_Progressbar_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
 
 /***/ }),
 
@@ -55418,15 +55806,17 @@ __webpack_require__.r(__webpack_exports__);
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _Success_vue_vue_type_template_id_e836a030___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Success.vue?vue&type=template&id=e836a030& */ "./resources/js/components/Success.vue?vue&type=template&id=e836a030&");
-/* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+/* harmony import */ var _Success_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Success.vue?vue&type=script&lang=js& */ "./resources/js/components/Success.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
 
-var script = {}
+
+
 
 
 /* normalize component */
 
-var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_1__["default"])(
-  script,
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
+  _Success_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
   _Success_vue_vue_type_template_id_e836a030___WEBPACK_IMPORTED_MODULE_0__["render"],
   _Success_vue_vue_type_template_id_e836a030___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
   false,
@@ -55440,6 +55830,20 @@ var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_
 if (false) { var api; }
 component.options.__file = "resources/js/components/Success.vue"
 /* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/components/Success.vue?vue&type=script&lang=js&":
+/*!**********************************************************************!*\
+  !*** ./resources/js/components/Success.vue?vue&type=script&lang=js& ***!
+  \**********************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_Success_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/babel-loader/lib??ref--4-0!../../../node_modules/vue-loader/lib??vue-loader-options!./Success.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Success.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_Success_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
 
 /***/ }),
 
@@ -55548,7 +55952,8 @@ vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_1__
 /* harmony default export */ __webpack_exports__["default"] = (new vuex__WEBPACK_IMPORTED_MODULE_1__["default"].Store({
   state: {
     personal: [],
-    company: []
+    company: [],
+    step: 1
   },
   mutations: {
     addPersonal: function addPersonal(state, value) {
@@ -55556,16 +55961,34 @@ vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_1__
     },
     addCompany: function addCompany(state, value) {
       state.company = value;
+    },
+    updateStep: function updateStep(state, value) {
+      state.step = value;
+    },
+    incrementStep: function incrementStep(state, value) {
+      state.step = ++value;
+      console.log('decrementStep is ' + value);
+    },
+    decrementStep: function decrementStep(state, value) {
+      state.step = --value;
+      console.log('decrementStep is ' + value);
     }
   },
   actions: {
     addPersonal: function addPersonal(context, value) {
       context.commit('addPersonal', value);
-      console.log('Personal Has Been Added');
     },
     addCompany: function addCompany(context, value) {
       context.commit('addCompany', value);
-      console.log('Company Has Been Added');
+    },
+    updateStep: function updateStep(context, value) {
+      context.commit('updateStep', value);
+    },
+    incrementStep: function incrementStep(context, value) {
+      context.commit('incrementStep', value);
+    },
+    decrementStep: function decrementStep(context, value) {
+      context.commit('decrementStep', value);
     }
   }
   /* getters: {

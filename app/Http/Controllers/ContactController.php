@@ -42,7 +42,7 @@ class ContactController extends Controller
 
         $contact->save();
 
-        Mail::to($contact->email)->send(new CreatedMail());
+        //Mail::to($contact->email)->send(new CreatedMail());
 
         return response()->json(['statu'=>true,'message'=>'Has been created']);
     }

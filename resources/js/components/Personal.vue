@@ -1,5 +1,5 @@
 <template>
-    <fieldset >
+    <fieldset id="Personal">
         <div class="form-card">
             <div class="row">
                 <div class="col-7">
@@ -34,13 +34,7 @@
 export default {
     data(){
         return {
-            personal: {
-                fname:'',
-                lname:'',
-                email:'',
-                phone:'',
-                address:''
-            },
+            personal: {},
             errors: {
                 fname:null,
                 lname:null,
@@ -52,9 +46,14 @@ export default {
         }
     },
     mounted() {
-        if (localStorage.getItem('personal')) {
-            this.personal = JSON.parse(localStorage.getItem('personal'));
+        this.personal = JSON.parse(localStorage.getItem('personal'));
+        
+        if (JSON.parse(localStorage.getItem('step')) === 1) {
+            this.loadComponent();
+            this.$store.state.personal = JSON.parse(localStorage.getItem('personal'));
+           return this.$store.dispatch('updateStep',JSON.parse(localStorage.getItem('step')));
         }
+        
     },
     methods: {
         checkForm: function (e) {
@@ -82,65 +81,77 @@ export default {
             if (!this.personal.phone) {
                 this.errors.push('Phone required.');
             }
+
             if (!this.personal.address) {
                 this.errors.push('Address required.');
             }
 
             e.preventDefault();
             },
-        next(){            
-            
+        next(){        
             localStorage.setItem('personal',JSON.stringify(this.personal));
+            this.nextForm();
+            return this.loadState();
+            
+        },
+        loadState(){
+            let newPersonal = this.personal;
+            return this.$store.dispatch('addPersonal',newPersonal);
+        },
+        loadComponent(){
+            //Progress Bar Style
+            var current = JSON.parse(localStorage.getItem('step'));
+            var steps = $("fieldset").length;
 
-            //JQuery Script
-            $(document).ready(function(){
+            $("#step2 li").removeClass("active");
+            $("#step3 li").removeClass("active");
+            $("#step4 li").removeClass("active");
 
-                var current_fs, next_fs;
-                var opacity;
-                var current = 1;
-                var steps = $("fieldset").length;
-                
-                setProgressBar(++current);
-                
-                $(".next").click(function(){
-                
-                current_fs = $(this).parent();
-                next_fs = $(this).parent().next();
-                
-                $("#progressbar li").eq($("fieldset").index(next_fs)).addClass("active");
-                
-                next_fs.show();
-                current_fs.animate({opacity: 0}, {
-                step: function(now) {
-                opacity = 1 - now;
-                
-                current_fs.css({
-                'display': 'none',
-                'position': 'relative'
-                });
-                next_fs.css({'opacity': opacity});
-                },
-                duration: 500
-                });
-                setProgressBar(++current);
-                });
-                
-                function setProgressBar(curStep){
+            setProgressBar(current);
+            function setProgressBar(curStep){
                 var percent = parseFloat(100 / steps) * curStep;
                 percent = percent.toFixed();
                 $(".progress-bar")
                 .css("width",percent+"%")
-                }
-                
-                $(".submit").click(function(){
-                return false;
-                })
+            }
 
-                });
+        },
+        nextForm(){            
+            //Progress Bar Style
+            var opacity;
+            var current =  this.$store.state.step;
+            var steps = $("fieldset").length;
             
-            let newPersonal = this.personal;
-            return this.$store.dispatch('addPersonal',newPersonal);
+            $("#Company").show();
+            
+            $("#step2 li").addClass("active");
+            $("#step3 li").removeClass("active");
+            $("#step4 li").removeClass("active");
+            
+            $("#Personal").animate({opacity: 0}, {
+                step: function(now) {
+                    opacity = 1 - now;
+                    $("#Personal").css({
+                        'display': 'none',
+                        'position': 'relative'
+                    });
+                    $("#Company").css({'opacity': opacity});
+                },
+                duration: 500
+            });
+            
+            setProgressBar(++current);
+            function setProgressBar(curStep){
+                var percent = parseFloat(100 / steps) * curStep;
+                percent = percent.toFixed();
+                $(".progress-bar")
+                .css("width",percent+"%")
+            }
+
+            localStorage.setItem('step',current);
+            return this.$store.dispatch('incrementStep',this.$store.state.step);
         }
+
     }
 }
 </script>
